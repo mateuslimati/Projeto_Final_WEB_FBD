@@ -7,8 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import JDBC.ConnectionFactory;
 import model.Cliente;
 
@@ -43,13 +41,14 @@ public class ClienteDAO {
 	
 	public void updadeSenha(Cliente cliente){
 		
-		String sql = "update clientes set senha = ?;";
+		String sql = "update clientes set senha = ? where email = ?;";
 		this.pessoaConection = new ConnectionFactory().getConnection();
 		PreparedStatement stmt;
 
 		try{
 			stmt = pessoaConection.prepareStatement(sql);
 			stmt.setString(1, cliente.getSenha());
+			stmt.setString(2, cliente.getEmail());
 			stmt.executeUpdate();
 			stmt.close();
 
@@ -119,6 +118,36 @@ public class ClienteDAO {
 		return null;
 	}
 
+	public Cliente getById(int id){
+		
+		String sql = "select * from clientes where id = ?;";
+		this.pessoaConection = new ConnectionFactory().getConnection();
+		PreparedStatement stmt;
+
+		try{
+			stmt = pessoaConection.prepareStatement(sql);
+			stmt.setInt(1, id);
+			ResultSet rs = stmt.executeQuery();
+			if(rs.next()){
+				Cliente c = new Cliente(rs.getString("nome"), rs.getString("email"), rs.getString("senha"));
+				c.setId(rs.getInt("id"));
+				c.setEndereco("endereco");
+				stmt.close();
+				return c;
+			}
+			return null;
+		}catch (SQLException e) {
+			System.err.println(e.getMessage());
+		}finally {
+			try {
+				pessoaConection.close();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+		return null;
+	}	
+	
 	public List<Cliente> getClientes(){
 		
 		String sql = "select * from clientes;";
